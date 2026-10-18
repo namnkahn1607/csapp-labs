@@ -79,7 +79,25 @@ lab_spec() {
     return 1
 }
 
-refresh() {  # refresh <name> <tar-name> <dst-dir>
+# extract_nested <dir> -> unpack every *.tar under <dir> until none are left
+extract_nested() {
+    local dir="$1" pass=0 found f
+    while :; do
+        found=0
+        while IFS= read -r -d '' f; do
+            found=1
+            log "unpacking nested $(basename "$f")"
+            tar -xf "$f" -C "$(dirname "$f")"
+            rm -f -- "$f"
+        done < <(find "$dir" -type f -name '*.tar' -print0)
+        [ "$found" -eq 0 ] && return 0
+        pass=$((pass + 1))
+        [ "$pass" -lt 8 ] || die "Nested tar depth exceeds 8 under '$dir'."
+    done
+}
+
+# refresh <name> <tar-name> <dst-dir>
+refresh() {
     if [ "$#" -ne 3 ]; then
         die "Expected 3 params <name> <tar-name> <dst-dir>, received $#."
     fi
@@ -98,6 +116,8 @@ refresh() {  # refresh <name> <tar-name> <dst-dir>
     if [ "${#entries[@]}" -eq 1 ] && [ -d "${entries[0]}" ]; then
         src="${entries[0]}"
     fi
+
+    extract_nested "$src"
 
     # Move handout into destination.
     if [ -e "$dst" ]; then
