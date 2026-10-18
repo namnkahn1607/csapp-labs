@@ -20,33 +20,33 @@ EOF
 
 refresh() {
     if [ "$#" -ne 4 ]; then
-        die "Expected 4 params, received $#."
+        die "Expected 4 params <url> <tar-name> <src-dir> <dst-dir>, received $#."
     fi
 
-    wget "$1"
-    tar -xvf "$2"
+    wget "$1"  # Fetch tar from URL
+    tar -xvf "$2"  # Untarring
     mv "$3" "$4"
     rm "$2"
 }
 
-# ==============================================================================
-# Data Lab
-# ==============================================================================
+# =============================================================================
+# 01. Data Lab
+# =============================================================================
 DATA_URL="https://csapp.cs.cmu.edu/3e/datalab-handout.tar"
 DATA_TAR="datalab-handout.tar"
 DATA_SRC="datalab-handout"
 DATA_DST="01_data"
 
-# ==============================================================================
+# =============================================================================
 # Entry point
-# ==============================================================================
+# =============================================================================
 main() {
     [[ $# -ge 1 ]] || { usage; exit 1; }
 
     local labs=("$@")
     for lab in "${labs[@]}"; do
         case "$lab" in
-            data)  refresh "$DATA_URL" "$DATA_TAR" "$DATA_SRC" "$DATA_DST" ;;
+            data) refresh "$DATA_URL" "$DATA_TAR" "$DATA_SRC" "$DATA_DST" ;;
             *) die "Unknown lab: '$lab'. Run without args to see usage." ;;
         esac
     done
